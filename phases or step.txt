@@ -1,0 +1,352 @@
+Perfect. Now we **slow everything down**, remove confusion, and convert this into a **step-by-step execution roadmap** where you work on **ONE STEP AT A TIME**, like a real software project.
+
+I’ll also **clearly explain the backend question** (Java / Node / Firebase / local) so you understand **why and when a backend is needed**.
+
+---
+
+# 🧭 CAMPUSNAV – STEP-BY-STEP EXECUTION PLAN
+
+*(Hackathon-safe, real-world, fool-proof)*
+
+This plan is divided into **7 clear phases**.
+You **do NOT jump ahead**. You finish one phase → then move to the next.
+
+---
+
+## 🔴 PHASE 0: DECISIONS (DO THIS FIRST – NO CODING)
+
+### Goal
+
+Lock decisions so you don’t change direction mid-hackathon.
+
+### Decisions to Lock
+
+* ✅ Platform: **Mobile App**
+* ✅ Framework: **Flutter**
+* ✅ Scope: **ONE building, ONE–TWO floors**
+* ✅ Navigation type: **Offline, hybrid (sensors + QR + visuals)**
+* ✅ Demo priority > full accuracy
+
+📌 **Important**
+At this stage, **NO backend server is required**.
+We start **local-first**.
+
+✔ Output of Phase 0:
+
+* Written problem statement (5–6 lines)
+* Final feature list (already locked)
+* Agreement: *“No new features will be added”*
+
+---
+
+## 🟠 PHASE 1: USER FLOW & SCREENS (UX FIRST)
+
+### Goal
+
+Understand **how a user moves through the app**, before tech.
+
+### Screens to Design (on paper / Figma / notebook)
+
+1. Splash / Start
+2. “Scan QR to start” OR “Select nearby landmark”
+3. Search screen (AI assistant)
+4. Map + navigation screen
+5. “I’m lost” fallback screen
+6. Manual / photo guidance screen
+7. Demo mode toggle (hidden)
+
+📌 **No backend. No sensors yet. Only flow.**
+
+✔ Output of Phase 1:
+
+* Clear screen sequence
+* What happens if user clicks X / fails / gets confused
+
+---
+
+## 🟡 PHASE 2: DATA & MAP MODEL (THE FOUNDATION)
+
+### Goal
+
+Create the **campus as data**, not visuals.
+
+### What You Build
+
+* `graph.json`
+* Local personnel database
+
+### Data You Define
+
+#### A. Nodes
+
+* Entrance
+* Corridors
+* Stairs
+* Offices (Dean, Registrar, etc.)
+
+#### B. Edges
+
+* Walkable paths between nodes
+* Distance in meters or steps
+
+#### C. Personnel Data
+
+* Name
+* Role
+* Office Node ID
+* Last updated date
+
+📌 Stored locally using **Hive / Isar**
+
+✔ Output of Phase 2:
+
+* Working campus graph (JSON)
+* Local DB structure
+* Zero UI, zero backend
+
+---
+
+## 🟢 PHASE 3: CORE NAVIGATION ENGINE (NO UI YET)
+
+### Goal
+
+Make the **brain** work before visuals.
+
+### What You Implement
+
+1. **A* Pathfinding**
+
+   * Input: Start Node → End Node
+   * Output: List of nodes (path)
+
+2. **Rail Snapping Logic**
+
+   * User position always stays on valid path
+   * Prevents drifting through walls
+
+3. **Dynamic Rerouting**
+
+   * Mark edge as blocked
+   * Recalculate path instantly
+
+📌 Still **offline, local only**.
+
+✔ Output of Phase 3:
+
+* Given any two nodes → path is correct
+* Blocked path → reroutes correctly
+
+---
+
+## 🔵 PHASE 4: POSITION TRACKING (HYBRID LOGIC)
+
+### Goal
+
+Move the user dot **safely**, not perfectly.
+
+### Step-by-Step
+
+1. **Activity Recognition**
+
+   * Detect walking vs still
+   * Freeze dot when still
+
+2. **Step Counting**
+
+   * Each step = small forward movement
+
+3. **Heading Control**
+
+   * Ignore compass if phone tilted
+   * Assume direction from path
+
+4. **QR Reset**
+
+   * Scan QR → snap to exact node
+
+📌 Still **NO backend**.
+
+✔ Output of Phase 4:
+
+* Dot moves only when user walks
+* QR scan fixes drift
+* No random movement
+
+---
+
+## 🟣 PHASE 5: UI IMPLEMENTATION (NOW VISUALS)
+
+### Goal
+
+Make it **clear, simple, and demo-safe**.
+
+### UI Components
+
+* SVG floor map
+* Path overlay
+* Live dot
+* Confidence indicator
+* Search bar
+* “I’m lost” button
+
+### Navigation UI Modes
+
+* Normal map mode
+* Photo carousel mode (fallback)
+* Manual step mode
+
+📌 This is where your **reference UI image inspiration fits**.
+
+✔ Output of Phase 5:
+
+* Judges can understand navigation in 5 seconds
+* Even if sensors fail, UI still guides
+
+---
+
+## 🟤 PHASE 6: AI ASSISTANT (OFFLINE-FIRST)
+
+### Goal
+
+Enable **search → navigation**, not ChatGPT.
+
+### How It Works
+
+* User types: “Dean of Engineering”
+* Fuzzy search in local DB
+* Finds matching person
+* Returns office node
+* Triggers navigation
+
+### Add Transparency
+
+* “Data last updated on ___”
+
+📌 Still **NO server backend required**.
+
+✔ Output of Phase 6:
+
+* AI feels smart
+* Zero hallucination
+* Works without internet
+
+---
+
+## ⚫ PHASE 7: BACKEND (IMPORTANT – READ CAREFULLY)
+
+### ❗ DO YOU REALLY NEED A BACKEND?
+
+**For the hackathon demo → NO (not mandatory)**
+**For real-world scalability → YES**
+
+So we design backend **as a future layer**, not a dependency.
+
+---
+
+## ✅ BACKEND STRATEGY (PROPER & REALISTIC)
+
+### Option 1: Local-First (Hackathon Mode)
+
+* Everything runs on device
+* Fast
+* Reliable
+* No internet risk
+
+👉 **THIS is what you demo**
+
+---
+
+### Option 2: Sync Backend (Post-Hackathon / Bonus)
+
+You add backend **only for syncing**, not live navigation.
+
+### Recommended Backend Stack
+
+#### Backend Language
+
+* **Java (Spring Boot)** ✅ OR
+* Node.js (Express)
+
+### Backend Responsibilities
+
+* Store:
+
+  * Campus maps
+  * Personnel updates
+* Sync data when internet is available
+* Admin dashboard (future)
+
+### Architecture
+
+```
+Mobile App (Offline)
+   ↓ (when internet)
+Backend API
+   ↓
+Database
+```
+
+📌 Navigation **never depends on backend**.
+
+---
+
+## 🔧 BACKEND PHASE BREAKDOWN (IF TIME ALLOWS)
+
+### Phase B1: Backend Setup
+
+* Java Spring Boot REST API
+* Endpoints:
+
+  * `/campus-data`
+  * `/personnel`
+
+### Phase B2: Sync Logic
+
+* App checks internet
+* Pulls updated JSON
+* Saves locally
+
+### Phase B3: Admin Use Case (Optional)
+
+* Update staff room numbers
+* Push updates
+
+---
+
+## 🧨 PHASE 8: DEMO SAFETY & POLISH (NON-NEGOTIABLE)
+
+### Must-Haves
+
+* Demo mode toggle
+* Simulated walking
+* Fake perfect navigation
+* No crashes
+
+### Why?
+
+Hackathons are **live theatre**.
+You must control the narrative.
+
+---
+
+# 🧠 FINAL SIMPLE RULE (REMEMBER THIS)
+
+> **Navigation logic first → UI second → AI third → backend last**
+
+If you reverse this, you will fail.
+
+---
+
+## ✅ WHAT YOU SHOULD DO NEXT (ONE STEP ONLY)
+
+👉 **Start with PHASE 1 (User Flow & Screens)**
+Do NOT code yet.
+
+If you want, next I can:
+
+* Convert Phase 1 into **exact screen list**
+* Create **backend API design (Java)**
+* Create **task checklist for each phase**
+* Or **draw architecture diagram**
+
+Just tell me **which phase you want to start with**.
