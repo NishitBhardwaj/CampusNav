@@ -1,7 +1,7 @@
 /// CampusNav - App Routes
 ///
 /// Defines app navigation routes and route generation.
-/// Includes all screens for Phase 0 foundation.
+/// Complete routing for Phase 1 UX flow.
 
 import 'package:flutter/material.dart';
 import '../presentation/screens/splash/splash_screen.dart';
@@ -9,8 +9,11 @@ import '../presentation/screens/home/home_screen.dart';
 import '../presentation/screens/location_init/location_init_screen.dart';
 import '../presentation/screens/search/search_screen.dart';
 import '../presentation/screens/navigation/navigation_screen.dart';
+import '../presentation/screens/navigation/navigation_preview_screen.dart';
 import '../presentation/screens/admin/admin_screen.dart';
+import '../presentation/screens/admin/admin_feedback_review.dart';
 import '../presentation/screens/fallback/fallback_screen.dart';
+import '../presentation/screens/fallback/lost_screen.dart';
 import '../presentation/screens/arrival/arrival_screen.dart';
 
 // =============================================================================
@@ -23,9 +26,12 @@ class Routes {
   static const String home = '/home';
   static const String locationInit = '/location_init';
   static const String search = '/search';
+  static const String navigationPreview = '/navigation_preview';
   static const String navigation = '/navigation';
   static const String admin = '/admin';
+  static const String adminFeedback = '/admin/feedback';
   static const String fallback = '/fallback';
+  static const String lost = '/lost';
   static const String arrival = '/arrival';
 }
 
@@ -49,15 +55,24 @@ class AppRoutes {
       case Routes.search:
         return _buildRoute(const SearchScreen(), settings);
 
+      case Routes.navigationPreview:
+        return _buildRoute(const NavigationPreviewScreen(), settings);
+
       case Routes.navigation:
         return _buildRoute(const NavigationScreen(), settings);
 
       case Routes.admin:
         return _buildRoute(const AdminScreen(), settings);
 
+      case Routes.adminFeedback:
+        return _buildRoute(const AdminFeedbackReviewScreen(), settings);
+
       case Routes.fallback:
         final errorMessage = settings.arguments as String?;
         return _buildRoute(FallbackScreen(errorMessage: errorMessage), settings);
+
+      case Routes.lost:
+        return _buildRoute(const LostScreen(), settings);
 
       case Routes.arrival:
         return _buildRoute(const ArrivalScreen(), settings);
@@ -74,13 +89,15 @@ class AppRoutes {
                   const SizedBox(height: 16),
                   Text('Route not found: ${settings.name}'),
                   const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pushReplacementNamed(
-                      Navigator.of(settings.arguments as BuildContext? ?? 
-                          throw Exception('No context')).context,
-                      Routes.home,
+                  Builder(
+                    builder: (context) => ElevatedButton(
+                      onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        Routes.home,
+                        (route) => false,
+                      ),
+                      child: const Text('Go Home'),
                     ),
-                    child: const Text('Go Home'),
                   ),
                 ],
               ),
@@ -91,7 +108,7 @@ class AppRoutes {
     }
   }
 
-  /// Build a material page route with custom transition
+  /// Build a material page route
   static MaterialPageRoute _buildRoute(Widget page, RouteSettings settings) {
     return MaterialPageRoute(
       builder: (_) => page,
