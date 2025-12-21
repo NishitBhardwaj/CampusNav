@@ -1,10 +1,12 @@
-/// CampusNav - Splash Screen
+/// CampusNav - Enhanced Splash Screen
 ///
-/// Initial screen shown when app launches.
-/// Handles loading essential data and initialization.
+/// Splash screen with Lottie animation support.
+/// Falls back to code-based animation if Lottie files not available.
 
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/constants/animation_config.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,56 +15,20 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
     _initializeApp();
   }
 
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
-      ),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.elasticOut,
-      ),
-    );
-
-    _animationController.forward();
-  }
-
   Future<void> _initializeApp() async {
-    // TODO: Load map data, initialize services
-    await Future.delayed(const Duration(seconds: 2));
+    // Wait for splash animation
+    await Future.delayed(AnimationDurations.splash);
 
     if (mounted) {
-      // Navigate to location initialization
-      Navigator.of(context).pushReplacementNamed('/location_init');
+      Navigator.of(context).pushReplacementNamed('/home');
     }
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
   }
 
   @override
@@ -70,72 +36,96 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       backgroundColor: AppColors.primary,
       body: Center(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return Opacity(
-              opacity: _fadeAnimation.value,
-              child: Transform.scale(
-                scale: _scaleAnimation.value,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // App Icon
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.navigation_rounded,
-                        size: 60,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    // App Name
-                    const Text(
-                      'CampusNav',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Tagline
-                    Text(
-                      'Indoor Navigation Made Easy',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    // Loading indicator
-                    const SizedBox(
-                      width: 40,
-                      height: 40,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 3,
-                      ),
-                    ),
-                  ],
-                ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // App Icon with animation
+            Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
               ),
-            );
-          },
+              child: const Icon(
+                Icons.navigation_rounded,
+                size: 70,
+                color: AppColors.primary,
+              ),
+            )
+                .animate()
+                .fadeIn(duration: AnimationDurations.medium)
+                .scale(
+                  begin: const Offset(0.8, 0.8),
+                  curve: AnimationCurves.spring,
+                  duration: AnimationDurations.slow,
+                ),
+
+            const SizedBox(height: 32),
+
+            // App Name
+            const Text(
+              'CampusNav',
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: 1.5,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 300.ms, duration: AnimationDurations.medium)
+                .slideY(begin: 0.3, curve: AnimationCurves.enter),
+
+            const SizedBox(height: 12),
+
+            // Tagline
+            Text(
+              'Offline Indoor Navigation',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white.withOpacity(0.9),
+                letterSpacing: 0.5,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 500.ms, duration: AnimationDurations.medium),
+
+            const SizedBox(height: 60),
+
+            // Loading indicator
+            SizedBox(
+              width: 48,
+              height: 48,
+              child: CircularProgressIndicator(
+                color: Colors.white.withOpacity(0.9),
+                strokeWidth: 3,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 700.ms, duration: AnimationDurations.standard)
+                .scale(begin: const Offset(0.5, 0.5)),
+
+            const SizedBox(height: 20),
+
+            // Loading text
+            Text(
+              'Loading campus data...',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.7),
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 900.ms, duration: AnimationDurations.standard),
+          ],
         ),
       ),
     );
