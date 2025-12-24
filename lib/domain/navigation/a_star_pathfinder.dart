@@ -6,6 +6,7 @@
 import 'dart:collection';
 import 'dart:math';
 import '../entities/node.dart';
+import 'graph.dart'; // PHASE 2: For blocked edge checking
 
 // =============================================================================
 // A* PATHFINDER
@@ -13,10 +14,13 @@ import '../entities/node.dart';
 
 class AStarPathfinder {
   /// Find the shortest path from start to goal using A* algorithm
+  /// 
+  /// PHASE 2: Now supports dynamic rerouting by avoiding blocked edges
   List<Node> findPath({
     required Node start,
     required Node goal,
     required Map<String, Node> graph,
+    NavigationGraph? navigationGraph, // PHASE 2: For blocked edge checking
   }) {
     // Priority queue for nodes to explore (ordered by f-score)
     final openSet = PriorityQueue<_AStarNode>(
@@ -58,6 +62,12 @@ class AStarPathfinder {
 
         final neighbor = graph[neighborId];
         if (neighbor == null || !neighbor.isWalkable) continue;
+        
+        // PHASE 2: Skip blocked edges
+        if (navigationGraph != null && 
+            navigationGraph.isEdgeBlocked(current.nodeId, neighborId)) {
+          continue;
+        }
 
         // Calculate tentative g-score
         final tentativeG =

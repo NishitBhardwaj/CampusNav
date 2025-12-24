@@ -2,12 +2,24 @@
 ///
 /// Main navigation controller that coordinates pathfinding,
 /// position tracking, and navigation instructions.
+///
+/// PHASE 2 ENHANCEMENTS:
+/// - Rail snapping for drift control
+/// - Hybrid positioning system
+/// - Demo mode support
+/// - Floor management
+/// - Dynamic rerouting on blocked paths
 
 import '../entities/node.dart';
 import '../entities/path.dart';
 import '../entities/location.dart';
+import '../entities/edge.dart';
 import 'a_star_pathfinder.dart';
 import 'graph.dart';
+import '../services/rail_snapping_service.dart';
+import '../services/navigation_positioning_service.dart';
+import '../services/demo_mode_service.dart';
+import '../services/floor_management_service.dart';
 
 // =============================================================================
 // NAVIGATION STATUS
@@ -67,18 +79,37 @@ class CurrentPosition {
 class NavigationEngine {
   final AStarPathfinder _pathfinder;
   final NavigationGraph _graph;
+  
+  /// PHASE 2: New services
+  final RailSnappingService _railSnapping;
+  final NavigationPositioningService _positioning;
+  final DemoModeService _demoMode;
+  final FloorManagementService _floorManagement;
 
   NavigationStatus _status = NavigationStatus.idle;
   Path? _currentPath;
   int _currentStepIndex = 0;
   CurrentPosition? _currentPosition;
   Location? _destination;
+  
+  /// PHASE 2: Dynamic rerouting flag
+  bool dynamicRerouteOnBlock = true;
 
   NavigationEngine({
     AStarPathfinder? pathfinder,
     NavigationGraph? graph,
+    RailSnappingService? railSnapping,
+    NavigationPositioningService? positioning,
+    DemoModeService? demoMode,
   })  : _pathfinder = pathfinder ?? AStarPathfinder(),
-        _graph = graph ?? NavigationGraph();
+        _graph = graph ?? NavigationGraph(),
+        _railSnapping = railSnapping ?? RailSnappingService(),
+        _positioning = positioning ?? NavigationPositioningService(),
+        _demoMode = demoMode ?? DemoModeService(),
+        _floorManagement = FloorManagementService(
+          graph: graph ?? NavigationGraph(),
+          pathfinder: pathfinder,
+        );
 
   // Getters
   NavigationStatus get status => _status;
@@ -86,6 +117,13 @@ class NavigationEngine {
   int get currentStepIndex => _currentStepIndex;
   CurrentPosition? get currentPosition => _currentPosition;
   Location? get destination => _destination;
+  NavigationGraph get graph => _graph;
+  
+  /// PHASE 2: Service getters
+  RailSnappingService get railSnapping => _railSnapping;
+  NavigationPositioningService get positioning => _positioning;
+  DemoModeService get demoMode => _demoMode;
+  FloorManagementService get floorManagement => _floorManagement;
 
   /// Initialize the navigation graph with nodes
   void initializeGraph(List<Node> nodes) {
@@ -231,5 +269,108 @@ class NavigationEngine {
 
     _status = NavigationStatus.rerouting;
     return startNavigation(from: _currentPosition!, to: _destination!);
+  }
+  
+  // ===========================================================================
+  // PHASE 2: BLOCKED PATH HANDLING
+  // ===========================================================================
+  
+  /// Block a path segment and reroute
+  /// 
+  /// This is called when user reports a blocked hallway or path.
+  /// The system will mark the edge as blocked and recalculate the route.
+  Future<Path?> blockPathAndReroute({
+    required String fromNodeId,
+    required String toNodeId,
+    required String reason,
+  }) async {
+    // Block the edge
+    _graph.blockEdge(fromNodeId, toNodeId, reason);
+    
+    // Recalculate route if currently navigating
+    if (_status == NavigationStatus.navigating && dynamicRerouteOnBlock) {
+      _status = NavigationStatus.rerouting;
+      return recalculateRoute();
+    }
+    
+    return null;
+  }
+  
+  /// Unblock a previously blocked path
+  void unblockPath({
+    required String fromNodeId,
+    required String toNodeId,
+  }) {
+    _graph.unblockEdge(fromNodeId, toNodeId);
+  }
+  
+  /// Get list of blocked edges
+  List<Edge> getBlockedEdges() {
+    return _graph.allEdges.where((e) => e.isBlocked).toList();
+  }
+  
+  // ===========================================================================
+  // PHASE 2: RAIL SNAPPING
+  // ===========================================================================
+  
+  /// Apply rail snapping to current position
+  /// 
+  /// This keeps the user position aligned to valid navigation paths.
+  /// Call this periodically during navigation to prevent drift.
+  CurrentPosition? applyRailSnapping(CurrentPosition position) {
+    if (_currentPath == null) return position;
+    
+    // Get edges on current floor
+    final floorEdges = _graph.getEdgesByFloor(position.floorId);
+    
+    // Find nearest edge
+    final nearest = _railSnapping.getNearestEdge(
+      currentX: position.x,
+      currentY: position.y,
+      availableEdges: floorEdges,
+      nodeMap: _graph.nodeMap,
+      currentFloorId: position.floorId,
+    );
+    
+    if (nearest == null) return position;
+    
+    // Snap heading to edge direction
+    final snappedHeading = _railSnapping.snapToEdge(
+      currentHeading: position.heading,
+      edge: nearest.edge,
+      nodeMap: _graph.nodeMap,
+    );
+    
+    // Return snapped position
+    return CurrentPosition(
+      x: nearest.x,
+      y: nearest.y,
+      floorId: position.floorId,
+      heading: snappedHeading,
+      timestamp: position.timestamp,
+    );
+  }
+  
+  /// Check if user is off path
+  bool isOffPath(CurrentPosition position) {
+    final floorEdges = _graph.getEdgesByFloor(position.floorId);
+    
+    return _railSnapping.isOffPath(
+      currentX: position.x,
+      currentY: position.y,
+      availableEdges: floorEdges,
+      nodeMap: _graph.nodeMap,
+      currentFloorId: position.floorId,
+    );
+  }
+  
+  // ===========================================================================
+  // PHASE 2: RESOURCE MANAGEMENT
+  // ===========================================================================
+  
+  /// Dispose resources
+  void dispose() {
+    _positioning.dispose();
+    _demoMode.dispose();
   }
 }
