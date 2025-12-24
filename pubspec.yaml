@@ -36,6 +36,13 @@ dependencies:
   modal_bottom_sheet: ^3.0.0
   shimmer: ^3.0.0
 
+  # PHASE 7: Authentication & User Profile
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.15.0
+  google_sign_in: ^6.1.6
+  flutter_secure_storage: ^9.0.0
+  cloud_firestore: ^4.13.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
