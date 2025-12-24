@@ -24,11 +24,12 @@ dependencies:
   lottie: ^3.1.0
   flutter_animate: ^4.5.0
 
-  # QR Code (placeholder)
-  # mobile_scanner: ^4.0.0  # Enable when implementing QR
+  # PHASE 3: QR Code Scanning
+  mobile_scanner: ^4.0.0
 
-  # Sensors (placeholder)
-  # sensors_plus: ^4.0.0  # Enable when implementing sensors
+  # PHASE 3: Sensors
+  sensors_plus: ^4.0.0
+  permission_handler: ^11.0.0
 
 dev_dependencies:
   flutter_test:

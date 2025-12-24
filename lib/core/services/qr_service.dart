@@ -1,13 +1,5 @@
 /// CampusNav - QR Service
 ///
-/// Service for QR code scanning and location initialization.
-/// QR codes are used to establish initial position within buildings.
-
-// =============================================================================
-// QR LOCATION DATA
-// =============================================================================
-
-/// Parsed data from a CampusNav QR code
 class QrLocationData {
   final String buildingId;
   final String floorId;
